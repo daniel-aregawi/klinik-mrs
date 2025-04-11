@@ -60,14 +60,14 @@ const userGuest = (to, from, next) => {
 
 
 let role = ''
-const fetchUserRole = async () => {
-    await axios.get('/fetch-user-role').then((res)=>{
-        if (res.data.data) {
-            return role = res.data.data.role
-        }
-        return null
-    })
-}
+// const fetchUserRole = async () => {
+//     await axios.get('/fetch-user-role').then((res)=>{
+//         if (res.data.data) {
+//             return role = res.data.data.role
+//         }
+//         return null
+//     })
+// }
 
 const isUserAdmin = async (to, from, next) => {
     if (role === 'admin') {
@@ -521,7 +521,7 @@ router.beforeEach(async (to, from, next) => {
 
     document.title = to.meta.title || 'Klinik'; 
 
-    await fetchUserRole()
+    await useFetchUserRole()
     const userRole = useFetchUserRole()
     userRole.userRole = role
 

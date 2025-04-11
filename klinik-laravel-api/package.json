@@ -1,0 +1,15 @@
+{
+  "name": "klinik-laravel-api",
+  "version": "1.0.0",
+  "description": "https://www.youtube.com/watch?v=2gbiS_S7kPQ",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

@@ -36,3 +36,32 @@ The **Klinik Laravel API** is a backend solution designed to streamline clinic o
 - **MySQL**: >= 5.7
 - **Node.js**: >= 16.x (for frontend assets with Laravel Mix)
 - **Git**: Latest version
+
+composer install
+
+
+npm install
+
+
+cp .env.example .env
+
+
+php artisan key:generate
+
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=klinik_database
+DB_USERNAME=root
+DB_PASSWORD=
+
+
+php artisan migrate
+
+
+php artisan db:seed
+
+
+http://localhost:8000/api/documentation
+

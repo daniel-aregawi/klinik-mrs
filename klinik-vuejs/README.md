@@ -27,3 +27,12 @@ The **Klinik Vue.js Frontend** is the user interface for the Klinik system, a co
 ### 1️⃣ Clone the Repository
 ```bash
 git clone https://github.com/IslamTaleb11/klinik-vuejs.git
+
+cd klinik-vuejs
+
+npm install
+
+
+
+This version maintains the original content but is phrased more concisely. Let me know if you need further adjustments!
+

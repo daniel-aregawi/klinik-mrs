@@ -79,6 +79,11 @@ async function testEmailConfig() {
 
 testEmailConfig();
 
+// Add this before your API routes
+app.get('/doctor/patients/booked', (req, res) => {
+  res.redirect('/api/doctor/patients/booked');
+});
+
 // API Routes
 // API Routes - SPECIFIC FIRST
 app.use("/api/admin", adminRoutes);
@@ -87,7 +92,11 @@ app.use("/api/patient", patientRoutes);
 app.use("/api/doctor", doctorRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/prescriptions", prescriptionRoutes);
+app.use("/api/auth", authRoutes); // <-- Add this line to register auth routes
 app.use("/api", receptionistRoutes);  // GENERAL ROUTE LAST
+
+// Optional: Add this to support /auth/me directly
+app.use('/auth', authRoutes);
 
 // Default Route
 app.get('/', (req, res) => {

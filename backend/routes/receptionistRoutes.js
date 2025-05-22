@@ -27,17 +27,6 @@ router.get('/patients/count',async (req, res) => {
   }
 });
 
-// Get all patients
-router.get('/patients',async (req, res) => {
-  try {
-    const patients = await Patient.find().select('-password -otp -otpExpiry');
-    res.json({ success: true, data: patients });
-  } catch (error) {
-    console.error('Error getting patients:', error);
-    res.status(500).json({ success: false, message: 'Error getting patients' });
-  }
-});
-
 // Search patients
 router.get('/patients/search',async (req, res) => {
   try {
@@ -90,6 +79,31 @@ router.post('/patients/register',async (req, res) => {
   } catch (error) {
     console.error('Error registering patient:', error);
     res.status(500).json({ success: false, message: 'Error registering patient' });
+  }
+});
+
+// Get all patients
+router.get('/patients', async (req, res) => {
+  try {
+    const patients = await Patient.find().select('-password -otp -otpExpiry');
+    res.json({ success: true, data: patients });
+  } catch (error) {
+    console.error('Error getting patients:', error);
+    res.status(500).json({ success: false, message: 'Error getting patients' });
+  }
+});
+
+// Get patient by customId
+router.get('/patients/:customId', async (req, res) => {
+  try {
+    const patient = await Patient.findOne({ customId: req.params.customId }).select('-password -otp -otpExpiry');
+    if (!patient) {
+      return res.status(404).json({ success: false, message: 'Patient not found' });
+    }
+    res.json({ success: true, data: patient });
+  } catch (error) {
+    console.error('Error getting patient:', error);
+    res.status(500).json({ success: false, message: 'Error getting patient' });
   }
 });
 

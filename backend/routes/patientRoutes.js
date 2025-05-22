@@ -208,14 +208,12 @@ router.get('/profile', authMiddleware, async (req, res) => {
   try {
     const patient = await Patient.findById(req.user.id)
       .select('-password -otp -otpExpiry');
-
     if (!patient) {
       return res.status(404).json({ 
         success: false,
         message: 'Patient not found' 
       });
     }
-
     res.json({
       success: true,
       data: patient
@@ -233,11 +231,14 @@ router.get('/profile', authMiddleware, async (req, res) => {
 router.put('/profile', authMiddleware, async (req, res) => {
   try {
     const updatedPatient = await Patient.findByIdAndUpdate(
-      req.user._id,
+      req.user.id,
       { $set: req.body },
       { new: true }
-    );
-    res.json({ success: true, patient: updatedPatient });
+    ).select('-password -otp -otpExpiry');
+    if (!updatedPatient) {
+      return res.status(404).json({ success: false, message: 'Patient not found' });
+    }
+    res.json({ success: true, data: updatedPatient });
   } catch (error) {
     console.error('Error updating profile:', error);
     res.status(500).json({ message: 'Error updating profile' });
@@ -247,10 +248,10 @@ router.put('/profile', authMiddleware, async (req, res) => {
 // Get patient appointments
 router.get('/appointments', authMiddleware, async (req, res) => {
   try {
-    const appointments = await Appointment.find({ patientId: req.user._id })
+    const appointments = await Appointment.find({ patientId: req.user.id })
       .populate('doctorId', 'username specialization')
       .sort({ date: -1 });
-    res.json(appointments);
+    res.json(Array.isArray(appointments) ? appointments : []);
   } catch (error) {
     console.error('Error fetching appointments:', error);
     res.status(500).json({ message: 'Error fetching appointments' });
@@ -265,11 +266,7 @@ router.get('/prescriptions', authMiddleware, async (req, res) => {
       .populate('appointmentId', 'date time')
       .sort({ createdAt: -1 });
 
-    if (!prescriptions.length) {
-      return res.status(200).json({ success: true, data: [] });
-    }
-
-    res.status(200).json({ success: true, data: prescriptions });
+    res.status(200).json({ success: true, data: Array.isArray(prescriptions) ? prescriptions : [] });
   } catch (error) {
     console.error('Error fetching prescriptions:', error);
     res.status(500).json({ success: false, message: 'Error fetching prescriptions' });
@@ -279,10 +276,10 @@ router.get('/prescriptions', authMiddleware, async (req, res) => {
 // Get patient lab reports
 router.get('/lab-reports', authMiddleware, async (req, res) => {
   try {
-    const labReports = await LabReport.find({ patientId: req.user._id })
+    const labReports = await LabReport.find({ patientId: req.user.id })
       .populate('doctorId', 'username specialization')
       .sort({ date: -1 });
-    res.json(labReports);
+    res.json(Array.isArray(labReports) ? labReports : []);
   } catch (error) {
     console.error('Error fetching lab reports:', error);
     res.status(500).json({ message: 'Error fetching lab reports' });
@@ -292,9 +289,9 @@ router.get('/lab-reports', authMiddleware, async (req, res) => {
 // Get patient notifications
 router.get('/notifications', authMiddleware, async (req, res) => {
   try {
-    const notifications = await Notification.find({ patientId: req.user._id })
+    const notifications = await Notification.find({ patientId: req.user.id })
       .sort({ date: -1 });
-    res.json(notifications);
+    res.json(Array.isArray(notifications) ? notifications : []);
   } catch (error) {
     console.error('Error fetching notifications:', error);
     res.status(500).json({ message: 'Error fetching notifications' });
@@ -302,7 +299,7 @@ router.get('/notifications', authMiddleware, async (req, res) => {
 });
 
 // Download lab report
-router.get('/lab-reports/:reportId/download', async (req, res) => {
+router.get('/lab-reports/:reportId/download', authMiddleware, async (req, res) => {
   try {
     const report = await LabReport.findOne({
       _id: req.params.reportId,
@@ -321,7 +318,7 @@ router.get('/lab-reports/:reportId/download', async (req, res) => {
 });
 
 // Download prescription
-router.get('/prescriptions/:prescriptionId/download', async (req, res) => {
+router.get('/prescriptions/:prescriptionId/download', authMiddleware, async (req, res) => {
   try {
     const prescription = await Prescription.findOne({
       _id: req.params.prescriptionId,
@@ -373,6 +370,38 @@ router.get('/medical-history', authMiddleware, async (req, res) => {
       success: false,
       message: 'Error fetching medical history' 
     });
+  }
+});
+
+// Get patient by customId (for doctor/patient view)
+router.get('/:customId', async (req, res) => {
+  try {
+    const patient = await Patient.findOne({ customId: req.params.customId }).select('-password -otp -otpExpiry');
+    if (!patient) {
+      return res.status(404).json({ success: false, message: 'Patient not found' });
+    }
+
+    // Get upcoming appointments
+    const now = new Date();
+    const upcomingAppointments = await Appointment.find({
+      patientId: patient._id,
+      date: { $gte: now }
+    })
+      .populate('doctorId', 'name specialization')
+      .sort({ date: 1 });
+
+    // Prepare response object with all expected fields
+    res.json({
+      ...patient.toObject(),
+      allergies: patient.allergies || [],
+      chronicConditions: patient.chronicConditions || [],
+      medications: patient.medications || [],
+      medicalHistory: patient.medicalHistory || [],
+      upcomingAppointments
+    });
+  } catch (error) {
+    console.error('Error getting patient:', error);
+    res.status(500).json({ success: false, message: 'Error getting patient' });
   }
 });
 

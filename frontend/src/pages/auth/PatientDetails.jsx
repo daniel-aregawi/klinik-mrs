@@ -22,19 +22,27 @@ const PatientDetails = () => {
   useEffect(() => {
     const fetchPatientData = async () => {
       try {
-        const response = await axios.get(`/api/doctor/patients/${customId}`, {
+        const response = await axios.get(`/api/patient/${customId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         });
-        setPatient(response.data);
+        if (response.data && response.data.success !== undefined) {
+          setPatient({ ...response.data });
+        } else {
+          setPatient(response.data);
+        }
       } catch (error) {
-        console.error('Fetch error:', error.response);
-        toast.error(error.response?.data?.message || 'Failed to load patient data');
-        navigate('/doctor/patients');
-      } finally {
+        // If 404, set patient to null and show not found
+        if (error.response && error.response.status === 404) {
+          setPatient(null);
+        } else {
+          toast.error(error.response?.data?.message || 'Failed to load patient data');
+        }
         setLoading(false);
+        return;
       }
+      setLoading(false);
     };
 
     fetchPatientData();
@@ -64,8 +72,9 @@ const PatientDetails = () => {
       <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary"></div>
     </div>
   );
-  
-  if (!patient) return (
+
+  // Show not found if patient is null
+  if (patient === null) return (
     <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="text-center p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
         <GiMedicalPack className="mx-auto text-5xl text-primary mb-4" />

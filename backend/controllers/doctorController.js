@@ -968,18 +968,24 @@ exports.getLatestPatientAppointment = async (req, res) => {
 // For Patients sidebar: Only show patients booked with this doctor
 exports.getBookedPatients = async (req, res) => {
   try {
-    // Find all patientIds with non-cancelled appointments for this doctor
-    const appointments = await Appointment.find({
-      doctorId: req.user.id,
-      status: { $ne: 'Cancelled' }
-    }).distinct('patientId');
+    // Find patients with at least one appointment with this doctor
+    const doctorId = req.user.id;
+    const appointments = await require('../models/appointmentModel').find({ doctorId }).populate('patientId');
+    const patients = appointments.map(a => a.patientId).filter(Boolean);
 
-    const patients = await Patient.find({
-      _id: { $in: appointments }
-    }).select('name age gender customId diagnosis medicalHistory');
+    // Remove duplicates by customId or _id
+    const uniquePatients = [];
+    const seen = new Set();
+    for (const p of patients) {
+      const id = p.customId || p._id.toString();
+      if (!seen.has(id)) {
+        seen.add(id);
+        uniquePatients.push(p);
+      }
+    }
 
-    res.status(200).json(patients);
+    res.json(uniquePatients);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'Error fetching booked patients' });
   }
 };

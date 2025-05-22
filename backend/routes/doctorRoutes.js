@@ -109,4 +109,9 @@ router.put('/profile', async (req, res) => {
   }
 });
 
+// Test route to check if router is working
+router.get('/patients/booked/test', (req, res) => {
+  res.json({ message: 'doctorRoutes is working' });
+});
+
 module.exports = router;

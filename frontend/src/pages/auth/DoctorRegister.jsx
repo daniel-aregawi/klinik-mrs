@@ -13,7 +13,8 @@ const DoctorRegister = () => {
     email: '',
     password: '',
     specialization: '',
-    contactNumber: ''
+    contactNumber: '',
+    status: 'Pending', // Ensure this is lowercase and matches backend enum
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -58,7 +59,11 @@ const DoctorRegister = () => {
     setLoading(true);
     
     try {
-      const response = await axios.post('http://localhost:3001/api/staff/register-doctor', formData);
+      // Always send status as lowercase 'pending'
+      await axios.post('http://localhost:3001/api/staff/register-doctor', {
+        ...formData,
+        status: 'pending',
+      });
       toast.success('Registration successful! Awaiting admin approval.');
       navigate('/awaiting-approval');
     } catch (error) {

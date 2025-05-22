@@ -350,6 +350,9 @@ const verifyOTP = async (req, res) => {
 const getProfile = async (req, res) => {
   try {
     const patient = await Patient.findById(req.user.id).select('-otp -otpExpiry');
+    if (!patient) {
+      return res.status(404).json({ success: false, message: 'Patient not found' });
+    }
     res.status(200).json({ success: true, data: patient });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching profile' });
@@ -368,7 +371,8 @@ const updateProfile = async (req, res) => {
       'address',
       'emergencyContact',
       'bloodGroup',
-      'allergies'
+      'allergies',
+      'dateOfBirth'
     ];
 
     const updateData = {};
@@ -411,10 +415,9 @@ const updateProfile = async (req, res) => {
 const getAppointments = async (req, res) => {
   try {
     const appointments = await Appointment.find({ patientId: req.user.id })
-      .populate('doctorId', 'name specialization')
+      .populate('doctorId', 'username specialization')
       .sort({ date: -1 });
-    
-    res.status(200).json(appointments);
+    res.status(200).json(Array.isArray(appointments) ? appointments : []);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching appointments' });
   }
@@ -423,36 +426,12 @@ const getAppointments = async (req, res) => {
 // Get patient prescriptions
 const getPrescriptions = async (req, res) => {
   try {
-    const prescriptions = await Prescription.find({ patientId: req.user._id })
-      .populate({
-        path: 'doctorId',
-        select: 'username specialization'
-      })
-      .populate({
-        path: 'appointmentId',
-        select: 'date time'
-      })
+    const prescriptions = await Prescription.find({ patientId: req.user.id })
+      .populate('doctorId', 'username specialization')
+      .populate('appointmentId', 'date time')
       .sort({ createdAt: -1 });
-    
-    if (!prescriptions.length) {
-      return res.status(200).json([]);
-    }
 
-    const formattedPrescriptions = prescriptions.map(prescription => ({
-      ...prescription.toObject(),
-      doctor: prescription.doctorId ? {
-        name: `Dr. ${prescription.doctorId.username}`,
-        specialization: prescription.doctorId.specialization
-      } : null,
-      appointmentTime: prescription.appointmentId ? {
-        date: prescription.appointmentId.date,
-        time: prescription.appointmentId.time,
-        formattedDateTime: new Date(prescription.appointmentId.date).toLocaleString()
-      } : null,
-      createdAt: prescription.createdAt,
-    }));
-    
-    res.status(200).json(formattedPrescriptions);
+    res.status(200).json({ success: true, data: Array.isArray(prescriptions) ? prescriptions : [] });
   } catch (error) {
     console.error('Error fetching prescriptions:', error);
     res.status(500).json({ message: 'Error fetching prescriptions' });

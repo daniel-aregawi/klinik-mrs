@@ -61,6 +61,38 @@ const PatientDashboard = () => {
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState('');
 
+  // Add handleDownloadReport function
+  const handleDownloadReport = async (id, type) => {
+    try {
+      let url = '';
+      if (type === 'prescription') {
+        url = `/patient/prescriptions/${id}/download`;
+      } else if (type === 'lab-report') {
+        url = `/patient/lab-reports/${id}/download`;
+      } else {
+        toast.error('Invalid download type');
+        return;
+      }
+      const token = localStorage.getItem('token');
+      const response = await axios.get(url, {
+        responseType: 'blob',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Download file
+      const blob = new Blob([response.data]);
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `${type}-${id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      toast.error('Failed to download file');
+    }
+  };
+
   useEffect(() => {
     if (!user) {
       navigate('/patient/login');
@@ -70,27 +102,47 @@ const PatientDashboard = () => {
     const fetchPatientData = async () => {
       try {
         setLoading(true);
-        
+        // Fetch all data in parallel
+        const token = localStorage.getItem('token');
         const [appointmentsRes, prescriptionsRes, labReportsRes, notificationsRes] = await Promise.all([
-          axios.get(`/patient/appointments`),
-          axios.get(`/patient/prescriptions`),
-          axios.get(`/patient/lab-reports`),
-          axios.get(`/patient/notifications`)
+          axios.get(`/patient/appointments`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`/patient/prescriptions`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`/patient/lab-reports`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`/patient/notifications`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
+        // Appointments
+        let appointments = Array.isArray(appointmentsRes.data)
+          ? appointmentsRes.data
+          : appointmentsRes.data?.data || [];
+
+        // Prescriptions
+        let prescriptions = [];
+        if (prescriptionsRes.data?.data) {
+          prescriptions = prescriptionsRes.data.data.map(p => ({
+            ...p,
+            doctor: p.doctorId
+              ? {
+                  name: p.doctorId.username || p.doctorId.name,
+                  specialization: p.doctorId.specialization
+                }
+              : undefined
+          }));
+        }
+
+        // Lab Reports
+        let labReports = Array.isArray(labReportsRes.data)
+          ? labReportsRes.data
+          : labReportsRes.data?.data || [];
+
         setPatientData({
-          appointments: appointmentsRes.data || [],
-          prescriptions: Array.isArray(prescriptionsRes.data.data)
-            ? prescriptionsRes.data.data.map(p => ({
-                ...p,
-                doctor: p.doctor || (p.doctorId ? { name: p.doctorId.username, specialization: p.doctorId.specialization } : undefined)
-              }))
-            : [],
-          labReports: labReportsRes.data || [],
+          appointments,
+          prescriptions,
+          labReports,
           medicalHistory: []
         });
 
-        setNotifications(notificationsRes.data || []);
+        setNotifications(Array.isArray(notificationsRes.data) ? notificationsRes.data : notificationsRes.data?.data || []);
       } catch (error) {
         console.error('Error fetching patient data:', error);
         toast.error('Failed to load patient data');
@@ -356,15 +408,15 @@ const PatientDashboard = () => {
     </button>
   );
 
-  const filteredAppointments = patientData.appointments.filter(appt => 
-    appt.doctor?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    appt.status?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredAppointments = patientData.appointments.filter(appt =>
+    (appt.doctor?.name || appt.doctor?.username || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (appt.status || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredPrescriptions = patientData.prescriptions.filter(prescription => 
-    prescription.doctor?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    prescription.medications?.some(med => 
-      med.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPrescriptions = patientData.prescriptions.filter(prescription =>
+    (prescription.doctor?.name || prescription.doctor?.username || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (prescription.medications || []).some(med =>
+      (med.name || '').toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 

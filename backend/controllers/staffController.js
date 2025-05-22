@@ -90,7 +90,7 @@ const registerDoctor = async (req, res) => {
             role: "Doctor",
             specialization,
             isApproved: false,
-            status: 'Active', // Set initial status as Active
+            status: 'Pending', // Set initial status as Active
         });
 
         await newDoctor.save();

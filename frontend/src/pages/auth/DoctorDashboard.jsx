@@ -54,7 +54,7 @@ const DoctorDashboard = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get('/doctor/me');
+        const response = await axios.get('/api/doctor/me');
         setUser(response.data);
       } catch (error) {
         toast.error('Failed to load user data');
@@ -70,9 +70,10 @@ const DoctorDashboard = () => {
     const fetchPrescriptions = async () => {
       try {
         setLoading(prev => ({ ...prev, prescriptions: true }));
-        const response = await axios.get('/doctor/prescriptions');
+        const response = await axios.get('/api/doctor/prescriptions');
         setPrescriptions(response.data || []);
       } catch (error) {
+        console.error("Error fetching prescriptions:", error);
         toast.error('Failed to load prescriptions');
         setPrescriptions([]);
       } finally {
@@ -90,7 +91,7 @@ const DoctorDashboard = () => {
     const fetchAppointments = async () => {
       try {
         setLoading(prev => ({ ...prev, appointments: true }));
-        const response = await axios.get('/doctor/appointments');
+        const response = await axios.get('/api/doctor/appointments');
         setAppointments(response.data || []);
       } catch (error) {
         setAppointments([]);
@@ -112,9 +113,9 @@ const DoctorDashboard = () => {
     const fetchStats = async () => {
       try {
         setLoading(prev => ({ ...prev, stats: true }));
-        const response = await axios.get('/doctor/stats');
+        const response = await axios.get('/api/doctor/stats');
         setStats(response.data);
-      } catch (error) {
+      } catch {
         toast.error('Failed to load statistics');
       } finally {
         setLoading(prev => ({ ...prev, stats: false }));
@@ -131,7 +132,7 @@ const DoctorDashboard = () => {
     const fetchNotifications = async () => {
       try {
         setLoading(prev => ({ ...prev, notifications: true }));
-        const response = await axios.get('/doctor/notifications');
+        const response = await axios.get('/api/doctor/notifications');
         setNotifications(response.data.notifications || []);
       } catch (error) {
         setNotifications([]);
@@ -152,7 +153,7 @@ const DoctorDashboard = () => {
     const fetchSidebarPatients = async () => {
       try {
         setLoading(prev => ({ ...prev, patients: true }));
-        const response = await axios.get('/doctor/patients/booked');
+        const response = await axios.get('/api/doctor/patients/booked');
         setPatients(response.data);
       } catch (error) {
         toast.error('Failed to load patients');
@@ -169,7 +170,7 @@ const DoctorDashboard = () => {
   useEffect(() => {
     const fetchPrescriptionPatients = async () => {
       try {
-        const response = await axios.get('/doctor/patients/booked');
+        const response = await axios.get('/api/doctor/patients/booked');
         setPatients(response.data);
       } catch (error) {
         toast.error('Failed to load patients for prescription');
@@ -195,16 +196,16 @@ const DoctorDashboard = () => {
         appt._id === appointmentId ? { ...appt, status: 'Completed' } : appt
       ));
 
-      await axios.put(`/doctor/appointments/${appointmentId}/complete`);
+      await axios.put(`/api/doctor/appointments/${appointmentId}/complete`);
       
       toast.success('Appointment marked as completed');
       
       // Refresh appointments list
-      const appointmentsRes = await axios.get('/doctor/appointments');
+      const appointmentsRes = await axios.get('/api/doctor/appointments');
       setAppointments(appointmentsRes.data || []);
       
       // Refresh notifications
-      const notificationsRes = await axios.get('/doctor/notifications');
+      const notificationsRes = await axios.get('/api/doctor/notifications');
       setNotifications(notificationsRes.data.notifications || []);
       
     } catch (error) {
@@ -222,7 +223,7 @@ const DoctorDashboard = () => {
 
   const markNotificationAsRead = async (notificationId) => {
     try {
-      await axios.patch(`/doctor/notifications/read/${notificationId}`);
+      await axios.patch(`/api/doctor/notifications/read/${notificationId}`);
       
       // Update local state
       setNotifications(prev => prev.map(notification => 
@@ -238,7 +239,7 @@ const DoctorDashboard = () => {
   const fetchPrescriptions = async () => {
     try {
       setLoading(prev => ({ ...prev, prescriptions: true }));
-      const response = await axios.get('/doctor/prescriptions');
+      const response = await axios.get('/api/doctor/prescriptions');
       setPrescriptions(response.data || []);
     } catch (error) {
       console.error("Prescription fetch error:", error);
@@ -248,6 +249,22 @@ const DoctorDashboard = () => {
       setLoading(prev => ({ ...prev, prescriptions: false }));
     }
   };
+
+  const fetchAppointments = async () => {
+    try {
+      setLoading(prev => ({ ...prev, appointments: true }));
+      const response = await axios.get('/api/doctor/appointments');
+      setAppointments(response.data || []);
+    } catch (error) {
+      setAppointments([]);
+      if (error.response?.status !== 404) {
+        toast.error('Failed to load appointments');
+      }
+    } finally {
+      setLoading(prev => ({ ...prev, appointments: false }));
+    }
+  };
+
   const handleSearchPatient = async () => {
     try {
       setLoading(prev => ({ ...prev, patients: true }));
@@ -385,7 +402,7 @@ const DoctorDashboard = () => {
         setPrescriptions(prescriptionsRes.data || []);
         
         // Update stats
-        const statsRes = await axios.get('/doctor/stats');
+        const statsRes = await axios.get('/api/doctor/stats');
         setStats(statsRes.data);
       }
     } catch (error) {

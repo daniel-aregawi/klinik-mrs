@@ -96,58 +96,74 @@ function HomePage() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden flex flex-col font-['Arial,_sans-serif']">
-    {/* Video Background */}
-    <video 
-      autoPlay 
-      loop 
-      muted 
-      className="absolute top-0 left-0 w-full h-full object-cover z-0"
-    >
-      <source src={backgroundVideo} type="video/mp4" />
-      Your browser does not support HTML5 video.
-    </video>
+      {/* Video Background */}
+      <video 
+        autoPlay 
+        loop 
+        muted 
+        className="absolute top-0 left-0 w-full h-full object-cover z-0"
+      >
+        <source src={backgroundVideo} type="video/mp4" />
+        Your browser does not support HTML5 video.
+      </video>
 
-    {/* Navigation */}
-    <nav className="fixed top-0 w-full bg-transparent z-50 py-2">
-      <div className="flex justify-center items-center gap-12 max-w-7xl mx-auto px-6">
-        {leftNavItems.map(item => (
-          <div
-            key={item.id}
-            className={`text-white text-lg font-medium px-4 py-2 cursor-pointer transition-all relative
-              ${activeNav === item.id ? 'text-white/90' : 'text-white/70 hover:text-white/90'} font-sans`}
-            onMouseEnter={() => setActiveNav(item.id)}
-            onMouseLeave={() => setActiveNav(null)}
-            onClick={() => handleNavClick(item.id)}
-          >
-            {item.label}
-            <div className={`absolute bottom-0 left-0 h-0.5 bg-white transition-all duration-300 
-              ${activeNav === item.id ? 'w-full' : 'w-0'}`} />
+      {/* Professional Navigation */}
+      <nav className="fixed top-0 w-full z-50 py-0">
+        <div className="backdrop-blur-md bg-white/30 shadow-lg border-b border-white/20">
+          <div className="flex justify-between items-center max-w-7xl mx-auto px-8 py-2">
+            {/* Left nav */}
+            <div className="flex gap-2">
+              {leftNavItems.map(item => (
+                <button
+                  key={item.id}
+                  className={`relative px-5 py-2 text-base font-semibold tracking-wide transition-colors duration-200
+                    text-slate-800 hover:text-blue-700 focus:outline-none
+                    ${activeNav === item.id ? 'text-blue-700' : ''}
+                  `}
+                  onMouseEnter={() => setActiveNav(item.id)}
+                  onMouseLeave={() => setActiveNav(null)}
+                  onClick={() => handleNavClick(item.id)}
+                >
+                  {item.label}
+                  <span className={`absolute left-1/2 -bottom-1.5 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-blue-700 rounded-full transition-all duration-300
+                    ${activeNav === item.id ? 'w-3/4 -translate-x-1/2' : 'w-0 -translate-x-1/2'}
+                  `} />
+                </button>
+              ))}
+            </div>
+
+            {/* Logo */}
+            <div className="flex-shrink-0 flex items-center">
+              <img 
+                src={logo} 
+                alt="Hospital Logo" 
+                className="w-auto h-16 max-h-20 rounded-full border-4 border-blue-200 shadow-lg bg-white object-contain mx-1"
+              />
+            </div>
+
+            {/* Right nav */}
+            <div className="flex gap-2">
+              {rightNavItems.map(item => (
+                <button
+                  key={item.id}
+                  className={`relative px-5 py-2 text-base font-semibold tracking-wide transition-colors duration-200
+                    text-slate-800 hover:text-blue-700 focus:outline-none
+                    ${activeNav === item.id ? 'text-blue-700' : ''}
+                  `}
+                  onMouseEnter={() => setActiveNav(item.id)}
+                  onMouseLeave={() => setActiveNav(null)}
+                  onClick={() => handleNavClick(item.id)}
+                >
+                  {item.label}
+                  <span className={`absolute left-1/2 -bottom-1.5 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-blue-700 rounded-full transition-all duration-300
+                    ${activeNav === item.id ? 'w-3/4 -translate-x-1/2' : 'w-0 -translate-x-1/2'}
+                  `} />
+                </button>
+              ))}
+            </div>
           </div>
-        ))}
-
-        <img 
-          src={logo} 
-          alt="Hospital Logo" 
-          className="w-24 h-24 mx-12 transition-transform hover:scale-105" 
-        />
-
-        {rightNavItems.map(item => (
-          <div
-            key={item.id}
-            className={`text-white text-lg font-medium px-4 py-2 cursor-pointer transition-all relative
-              ${activeNav === item.id ? 'text-white/90' : 'text-white/70 hover:text-white/90'} font-sans`}
-            onMouseEnter={() => setActiveNav(item.id)}
-            onMouseLeave={() => setActiveNav(null)}
-            onClick={() => handleNavClick(item.id)}
-          >
-            {item.label}
-            <div className={`absolute bottom-0 left-0 h-0.5 bg-white transition-all duration-300 
-              ${activeNav === item.id ? 'w-full' : 'w-0'}`} />
-          </div>
-        ))}
-      </div>
-    </nav>
-
+        </div>
+      </nav>
 
       {/* Empty space to push search bar to bottom */}
       <div className="flex-grow"></div>

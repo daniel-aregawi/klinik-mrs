@@ -5,6 +5,8 @@ const dotenv = require("dotenv");
 const sendSms = require("../utils/sendSms"); // Import your SMS utility
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const Appointment = require("../models/appointmentModel");
+const Prescription = require("../models/prescriptionModel");
 dotenv.config();
 
 // Constants for OTP handling
@@ -349,7 +351,7 @@ const verifyOTP = async (req, res) => {
 // Get patient profile
 const getProfile = async (req, res) => {
   try {
-    const patient = await Patient.findById(req.user.id).select('-otp -otpExpiry');
+    const patient = await Patient.findById(req.user._id).select('-otp -otpExpiry');
     if (!patient) {
       return res.status(404).json({ success: false, message: 'Patient not found' });
     }
@@ -383,7 +385,7 @@ const updateProfile = async (req, res) => {
     });
 
     const patient = await Patient.findByIdAndUpdate(
-      req.user.id,
+      req.user._id,
       updateData,
       { 
         new: true, 
@@ -414,7 +416,7 @@ const updateProfile = async (req, res) => {
 // Get patient appointments
 const getAppointments = async (req, res) => {
   try {
-    const appointments = await Appointment.find({ patientId: req.user.id })
+    const appointments = await Appointment.find({ patientId: req.user._id })
       .populate('doctorId', 'username specialization')
       .sort({ date: -1 });
     res.status(200).json(Array.isArray(appointments) ? appointments : []);
@@ -426,7 +428,7 @@ const getAppointments = async (req, res) => {
 // Get patient prescriptions
 const getPrescriptions = async (req, res) => {
   try {
-    const prescriptions = await Prescription.find({ patientId: req.user.id })
+    const prescriptions = await Prescription.find({ patientId: req.user._id })
       .populate('doctorId', 'username specialization')
       .populate('appointmentId', 'date time')
       .sort({ createdAt: -1 });

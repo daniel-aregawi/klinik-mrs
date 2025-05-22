@@ -100,10 +100,10 @@ exports.getNotifications = async (req, res) => {
     const doctor = await User.findById(req.user.id)
       .select('notifications')
       .populate('notifications.sender', 'name role');
-    
+    // Standardize notification id to _id for frontend
     res.status(200).json({
-      notifications: doctor.notifications.map(n => ({
-        id: n._id,
+      notifications: (doctor.notifications || []).map(n => ({
+        _id: n._id,
         title: n.title || 'Notification',
         message: n.message,
         type: n.type || 'general',
@@ -113,7 +113,7 @@ exports.getNotifications = async (req, res) => {
       }))
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(200).json({ notifications: [] }); // Return empty array on error
   }
 };
 // Mark a specific notification as read (Fix: Use User model)
@@ -504,7 +504,16 @@ exports.getNotifications = async (req, res) => {
 // Get doctor appointments
 exports.getDoctorAppointments = async (req, res) => {
   try {
-    const appointments = await Appointment.find({ doctorId: req.user.id })
+    // Support filtering by patientId and status via query params
+    const filter = { doctorId: req.user.id };
+    if (req.query.patientId) {
+      filter["patientId"] = req.query.patientId;
+    }
+    if (req.query.status) {
+      filter["status"] = req.query.status;
+    }
+
+    const appointments = await Appointment.find(filter)
       .populate({
         path: 'patientId',
         select: 'name age gender avatar customId contactNumber email'

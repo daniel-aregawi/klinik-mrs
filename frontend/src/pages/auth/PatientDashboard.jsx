@@ -173,7 +173,8 @@ const PatientDashboard = () => {
           age: res.data.data.age || ''
         });
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('Failed to fetch profile:', error);
       setProfileError('Failed to fetch profile.');
     } finally {
       setProfileLoading(false);

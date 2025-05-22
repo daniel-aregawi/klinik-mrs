@@ -27,10 +27,10 @@ const ReceptionistDashboard = () => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-    
+        // Use correct receptionist endpoints
         const [patientsRes, appointmentsRes] = await Promise.all([
-          axios.get('/patients/count'),
-          axios.get('/appointments', {
+          axios.get('/receptionist/patients/count'),
+          axios.get('/receptionist/appointments', {
             params: {
               date: new Date().toISOString().split('T')[0],
               limit: 5,
@@ -38,29 +38,27 @@ const ReceptionistDashboard = () => {
             }
           })
         ]);
-    
-        const appointments = appointmentsRes.data?.data || [];  
-    
+
+        const appointments = appointmentsRes.data?.data || [];
         const pendingActions = appointments.filter(
           appt => appt.status === 'Pending'
         ).length;
-    
+
         setStats({
           totalPatients: patientsRes.data.count || 0,
           todaysAppointments: appointments.length,
           pendingActions
         });
-    
+
         const formattedAppointments = appointments.map(appt => ({
           id: appt._id,
           patientName: appt.patientId?.name || 'N/A',
-          doctorName: appt.doctorId?.username || 'N/A',
+          doctorName: appt.doctorId?.username || appt.doctorId?.name || 'N/A',
           time: appt.date ? new Date(appt.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A',
           status: appt.status || 'Unknown'
         }));
-    
+
         setRecentAppointments(formattedAppointments);
-    
       } catch (error) {
         console.error('Error fetching dashboard data:', error.message || error);
       } finally {

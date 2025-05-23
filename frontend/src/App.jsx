@@ -1,13 +1,20 @@
 import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import logo from './hospitallogo.png';
 import backgroundVideo from './backgroundvideo.mp4';
 import { FiUpload, FiSearch } from 'react-icons/fi';
 import ReceptionistDashboard from './pages/ReceptionistDashboard';
 import axios from 'axios';
+import LabTechnicianLogin from './pages/LabTechnicianLogin';
 
 function App() {
-  return <HomePage />;
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/lab-technician/login" element={<LabTechnicianLogin />} />
+      {/* Add other routes as needed */}
+    </Routes>
+  );
 }
 
 function HomePage() {
@@ -42,7 +49,7 @@ function HomePage() {
         navigate('/auth/receptionist');
         break;
       case 'technicians':
-        navigate('/lab-technician/login');
+        navigate('/lab-technician/login'); // aligned with lab technician dashboard
         break;
       case 'about':
         navigate('/about-us');

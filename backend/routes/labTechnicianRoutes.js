@@ -1,4 +1,8 @@
-// Add a route to serve the login page for lab technicians
-router.get('/login', (req, res) => {
-  res.status(200).json({ message: 'Lab Technician Login Page' });
-});
+const express = require("express");
+const router = express.Router();
+const labTechnicianController = require("../controllers/labTechnicianController");
+
+// Lab Technician Login (email-only) route
+router.post('/login', labTechnicianController.loginLabTechnician);
+
+module.exports = router;

@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     role: { 
         type: String, 
-        enum: ["Admin", "Doctor", "Receptionist", "Lab Technician", "Patient"], 
+        enum: ["Admin", "Doctor", "Receptionist", "lab-technician", "Patient"], 
         required: true 
     },
     specialization: { 
@@ -117,7 +117,7 @@ userSchema.pre('save', function(next) {
         const prefix = this.role === 'Doctor' ? 'D-' : 
                       this.role === 'Admin' ? 'A-' :
                       this.role === 'Receptionist' ? 'R-' :
-                      this.role === 'Lab Technician' ? 'L-' : 'P-';
+                      this.role === 'lab-technician' ? 'L-' : 'P-';
         this.customId = `${prefix}${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     }
     next();

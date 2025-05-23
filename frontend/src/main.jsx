@@ -1,4 +1,3 @@
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -28,6 +27,7 @@ import './index.css';
 import axios from 'axios';
 import TermsOfService from './pages/auth/TermsOfService';
 import PrivacyPolicy from './pages/auth/PrivacyPolicy';
+import LabTechnicianLogin from './pages/LabTechnicianLogin';
 
 // In your routes configuration:
 
@@ -83,6 +83,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/doctor/patients/:customId" element={<PatientDetails />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/lab-technician/login" element={<LabTechnicianLogin />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

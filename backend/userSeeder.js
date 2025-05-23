@@ -49,7 +49,7 @@ async function seedUsers() {
       username: "Lab Technician User",
       email: "labtech@example.com",
       password: "LabTech123", // plain text, let pre-save hook hash it
-      role: "Lab Technician",
+      role: "lab-technician",
       status: "Pending",
     });
     await labTechUser.save();

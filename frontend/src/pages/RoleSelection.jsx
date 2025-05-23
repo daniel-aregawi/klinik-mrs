@@ -10,16 +10,21 @@ const RoleSelection = () => {
       navigate("/admin/login");
     } else if (role === "doctor") {
       navigate("/doctor/login");
-    } else if (role === "receptionist") {
+    }
+    else if (role === "receptionist") {
       navigate("/auth/receptionist");
-    } else if (role === "patient") {
+    }
+    else if (role === "patient") {
       navigate("/auth/patient");
-    } else if (role === "pharmacist") {
+    }
+    else if (role === "pharmacist") {
       navigate("/auth/pharmacist");
-    } else if (role === "nurse") {
+    }
+    else if (role === "labtechnician") {
+      navigate("/auth/labtechnician");
+    }
+    else if (role === "nurse") {
       navigate("/auth/nurse");
-    } else if (role === "lab-technician") {
-      navigate("/lab-technician/login");
     }
   };
 
@@ -32,7 +37,7 @@ const RoleSelection = () => {
       </div>
 
       {/* Home button */}
-      <button
+      <button 
         onClick={() => navigate("/")}
         className="absolute top-8 left-8 flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors z-10 group"
       >
@@ -44,12 +49,7 @@ const RoleSelection = () => {
 
       <div className="relative z-10 text-center mb-16">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 tracking-tight">
-          The{" "}
-          <span className="text-[#1890ff]">
-            Deccan
-            <br className="hidden sm:block" />
-            Care
-          </span>
+          The <span className="text-[#1890ff]">DeccanCare</span>
         </h1>
         <p className="text-lg text-gray-500 max-w-2xl">
           Select your role to access the healthcare management portal
@@ -71,38 +71,11 @@ const RoleSelection = () => {
               className="w-24 h-24 relative z-10 object-contain p-2"
             />
           </div>
-          <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-            Administrator
-          </h2>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-2">Administrator</h2>
           <p className="text-gray-500 text-center mb-6">
             Comprehensive system management and analytics
           </p>
           <div className="mt-auto px-6 py-2 bg-[#1890ff] text-white rounded-md font-medium shadow-sm hover:shadow-md transition-shadow">
-            Continue
-          </div>
-        </div>
-
-        {/* Lab Technician Card */}
-        <div
-          className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center cursor-pointer hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#FF5733]/20 group relative overflow-hidden"
-          onClick={() => handleSelect("lab-technician")}
-        >
-          <div className="absolute top-0 left-0 w-full h-1 bg-[#FF5733]"></div>
-          <div className="relative mb-6">
-            <div className="absolute inset-0 bg-[#FF5733]/10 rounded-full scale-90 group-hover:scale-100 transition-transform duration-300"></div>
-            <img
-              src="/src/assets/lab-technician.png"
-              alt="Lab Technician"
-              className="w-24 h-24 relative z-10 object-contain p-2"
-            />
-          </div>
-          <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-            Lab Technician
-          </h2>
-          <p className="text-gray-500 text-center mb-6">
-            Access lab reports and manage test results
-          </p>
-          <div className="mt-auto px-6 py-2 bg-[#FF5733] text-white rounded-md font-medium shadow-sm hover:shadow-md transition-shadow">
             Continue
           </div>
         </div>
@@ -121,9 +94,7 @@ const RoleSelection = () => {
               className="w-24 h-24 relative z-10 object-contain p-2"
             />
           </div>
-          <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-            Medical Doctor
-          </h2>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-2">Medical Doctor</h2>
           <p className="text-gray-500 text-center mb-6">
             Patient care and clinical management portal
           </p>

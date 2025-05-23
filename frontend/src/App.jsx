@@ -42,7 +42,7 @@ function HomePage() {
         navigate('/auth/receptionist');
         break;
       case 'technicians':
-        navigate('/technician/login');
+        navigate('/lab-technician/login');
         break;
       case 'about':
         navigate('/about-us');
@@ -133,13 +133,12 @@ function HomePage() {
             </div>
 
             {/* Logo */}
-            <div className="flex-shrink-0 flex items-center">
-              <img 
-                src={logo} 
-                alt="Hospital Logo" 
-                className="w-auto h-16 max-h-20 rounded-full border-4 border-blue-200 shadow-lg bg-white object-contain mx-1"
-              />
-            </div>
+            <button 
+              className="flex-shrink-0 flex items-center text-3xl font-bold text-slate-800"
+              onClick={() => navigate('/')}
+            >
+              HMS-MRS
+            </button>
 
             {/* Right nav */}
             <div className="flex gap-2">

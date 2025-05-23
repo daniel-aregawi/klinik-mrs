@@ -1,6 +1,7 @@
 const Patient = require("../models/patientModel");
 const Appointment = require("../models/appointmentModel");
 const User = require("../models/userModel");
+const nodemailer = require('nodemailer');
 
 // Register new patient with custom ID
 exports.registerPatient = async (req, res) => {
@@ -31,11 +32,30 @@ exports.registerPatient = async (req, res) => {
 
     await newPatient.save();
 
+    // Send email notification
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_APP_PASSWORD, // Use Gmail App Password
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Registration Confirmation',
+      text: `Dear ${name},\n\nThank you for registering with our hospital. Your registration is now complete.\n\nBest regards,\nHospital Management Team`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
     res.status(201).json({
       message: "Patient registered successfully",
       patient: {
         customId: newPatient.customId,
         name: newPatient.name,
+        email: newPatient.email,
         contactNumber: newPatient.contactNumber
       }
     });
@@ -238,5 +258,24 @@ exports.getAllAppointments = async (req, res) => {
       message: "Error fetching appointments",
       error: error.message 
     });
+  }
+};
+
+// Fetch today's appointments
+exports.getTodaysAppointments = async (req, res) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const appointments = await Appointment.find({
+      date: { $gte: new Date(today), $lt: new Date(today + 'T23:59:59') }
+    })
+      .limit(5)
+      .sort({ date: -1 })
+      .populate('patientId', 'name')
+      .populate('doctorId', 'username name');
+
+    res.json({ success: true, data: appointments });
+  } catch (error) {
+    console.error('Error fetching today\'s appointments:', error);
+    res.status(500).json({ success: false, message: 'Error fetching today\'s appointments' });
   }
 };

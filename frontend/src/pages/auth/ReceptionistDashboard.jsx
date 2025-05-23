@@ -5,6 +5,7 @@ import {
   FiUserPlus, FiSearch, FiCalendar, FiUsers, 
   FiClock, FiSettings, FiLogOut 
 } from 'react-icons/fi';
+import { toast } from 'react-toastify';
 
 const ReceptionistDashboard = () => {
   const navigate = useNavigate();
@@ -27,10 +28,10 @@ const ReceptionistDashboard = () => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        // Use correct receptionist endpoints
+
         const [patientsRes, appointmentsRes] = await Promise.all([
-          axios.get('/receptionist/patients/count'),
-          axios.get('/receptionist/appointments', {
+          axios.get('/api/receptionist/patients/count'),
+          axios.get('/api/receptionist/appointments', {
             params: {
               date: new Date().toISOString().split('T')[0],
               limit: 5,
@@ -50,17 +51,16 @@ const ReceptionistDashboard = () => {
           pendingActions
         });
 
-        const formattedAppointments = appointments.map(appt => ({
+        setRecentAppointments(appointments.map(appt => ({
           id: appt._id,
           patientName: appt.patientId?.name || 'N/A',
           doctorName: appt.doctorId?.username || appt.doctorId?.name || 'N/A',
           time: appt.date ? new Date(appt.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A',
           status: appt.status || 'Unknown'
-        }));
-
-        setRecentAppointments(formattedAppointments);
+        })));
       } catch (error) {
         console.error('Error fetching dashboard data:', error.message || error);
+        toast.error('Failed to load dashboard data. Please try again later.');
       } finally {
         setLoading(false);
       }

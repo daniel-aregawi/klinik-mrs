@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom'; // Add this line
 import { 
@@ -16,43 +16,46 @@ import { GiMedicines } from 'react-icons/gi';
 import backgroundVideo from '../../backgroundvideo.mp4';
 import logo from '../../hospitallogo.png';
 import doctor1 from "../../assets/doctor1.png";
-import doctor2 from "../../assets/doctor2.png"; 
-import doctor3 from "../../assets/doctor3.png";
+// import doctor2 from "../../assets/doctor2.png"; 
+// import doctor3 from "../../assets/doctor3.png";
 import hospitalBuilding from "../../assets/Yukimura_Hospital.png";
 
 const AboutUs = () => {
   const navigate = useNavigate(); 
   const [activeTab, setActiveTab] = useState('about');
 
-  const doctors = [
-    {
-      id: 1,
-      name: "Dr. Rajesh Kumar",
-      specialty: "Cardiologist",
-      experience: "15 years",
-      image: doctor1,
-      bio: "Harvard-trained cardiologist specializing in minimally invasive procedures. Pioneer in transcatheter aortic valve replacements.",
-      awards: ["Best Cardiologist Award 2022", "Top Doctor - Times Health"]
-    },
-    {
-      id: 2,
-      name: "Dr. Priya Sharma",
-      specialty: "Neurologist",
-      experience: "12 years",
-      image: doctor2,
-      bio: "Specializes in neurodegenerative disorders and stroke management. Developed new protocols for acute stroke care.",
-      awards: ["Neurology Excellence Award", "40 Under 40 Healthcare Leaders"]
-    },
-    {
-      id: 3,
-      name: "Dr. Amit Patel",
-      specialty: "Orthopedic Surgeon",
-      experience: "18 years",
-      image: doctor3,
-      bio: "World-renowned joint replacement specialist. Performed over 5,000 successful joint replacements.",
-      awards: ["Global Orthopedics Award", "Pioneer in Robotic Surgery"]
+  // Fetch doctors from backend
+  const [doctors, setDoctors] = useState([]); // Ensure doctors is initialized as an empty array
+  const [loadingDoctors, setLoadingDoctors] = useState(false);
+  const [doctorError, setDoctorError] = useState(null);
+  const [selectedDoctor, setSelectedDoctor] = useState(null); // State to store the selected doctor's details
+
+  const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+  useEffect(() => {
+    if (activeTab === 'doctors') {
+      setLoadingDoctors(true);
+      setDoctorError(null);
+      fetch('http://localhost:3001/api/doctors')
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to fetch doctors');
+          return res.json();
+        })
+        .then(data => {
+          if (data.success && Array.isArray(data.data)) {
+            setDoctors(data.data); // Extract the `data` field from the response
+          } else {
+            setDoctors([]); // Fallback to an empty array if the format is unexpected
+          }
+        })
+        .catch(err => setDoctorError(err.message))
+        .finally(() => setLoadingDoctors(false));
     }
-  ];
+  }, [activeTab]);
+
+  const handleViewProfile = (doctor) => {
+    setSelectedDoctor(doctor); // Set the selected doctor to display their business hours
+  };
 
   const testimonials = [
     {
@@ -215,60 +218,91 @@ const AboutUs = () => {
     <h2 className="text-4xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-600">
       Meet Our World-Class Specialists
     </h2>
-    
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {doctors.map((doctor, index) => (
-        <motion.div
-          key={doctor.id}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: index * 0.1 }}
-          whileHover={{ y: -10 }}
-          className="bg-gradient-to-br from-slate-800/50 to-slate-900/80 rounded-2xl overflow-hidden shadow-xl border border-white/10 backdrop-blur-sm flex flex-col h-full"
-        >
-          {/* Image Container - Fixed aspect ratio */}
-          <div className="relative pt-[75%] overflow-hidden">
-            <img
-              src={doctor.image}
-              alt={doctor.name}
-              className="absolute top-0 left-0 w-full h-full object-cover object-top"
-              loading="lazy"
-            />
-            <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/50 to-transparent"></div>
-          </div>
+    {loadingDoctors && (
+      <div className="text-center text-white/80 py-12">Loading doctors...</div>
+    )}
+    {doctorError && (
+      <div className="text-center text-red-400 py-12">{doctorError}</div>
+    )}
+    {!loadingDoctors && !doctorError && (
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {doctors.length === 0 && (
+          <div className="col-span-full text-center text-white/60">No approved doctors found.</div>
+        )}
+        {doctors.map((doctor, index) => (
+          <motion.div
+            key={doctor._id || doctor.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            whileHover={{ y: -10 }}
+            className="bg-gradient-to-br from-slate-800/50 to-slate-900/80 rounded-2xl overflow-hidden shadow-xl border border-white/10 backdrop-blur-sm flex flex-col h-full"
+          >
+            {/* Image Container */}
+            <div className="relative pt-[75%] overflow-hidden">
+              <img
+                src={doctor.image || doctor.profileImage || doctor1}
+                alt={doctor.name}
+                className="absolute top-0 left-0 w-full h-full object-cover object-top"
+                loading="lazy"
+              />
+              <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/50 to-transparent"></div>
+            </div>
 
-          {/* Content */}
-          <div className="p-6 flex-1 flex flex-col">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-2xl font-bold text-white">{doctor.name}</h3>
-                <p className="text-cyan-400 font-medium">{doctor.specialty}</p>
+            {/* Content */}
+            <div className="p-6 flex-1 flex flex-col">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-2xl font-bold text-white">{doctor.username}</h3>
+                  <p className="text-cyan-400 font-medium">{doctor.specialization}</p>
+                </div>
+                <span className="bg-blue-900/50 text-blue-300 px-2 py-1 rounded-full text-xs">
+                  Appt. Duration: {doctor.appointmentDuration} min
+                </span>
               </div>
-              <span className="bg-blue-900/50 text-blue-300 px-3 py-1 rounded-full text-sm">
-                {doctor.experience}
-              </span>
+              
+              <p className="text-white/80 mb-6 line-clamp-3 flex-1">{doctor.bio || doctor.description || ''}</p>
+              
+              <button
+                onClick={() => handleViewProfile(doctor)}
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white py-3 px-6 rounded-lg font-medium transition-all"
+              >
+                View Profile <IoIosArrowForward />
+              </button>
             </div>
-            
-            <p className="text-white/80 mb-6 line-clamp-3 flex-1">{doctor.bio}</p>
-            
-            <div className="mb-6">
-              <h4 className="text-sm font-semibold text-white/70 mb-2">NOTABLE AWARDS:</h4>
-              <div className="flex flex-wrap gap-2">
-                {doctor.awards.map((award, i) => (
-                  <span key={i} className="bg-indigo-900/50 text-indigo-200 px-3 py-1 rounded-full text-xs">
-                    {award}
+          </motion.div>
+        ))}
+      </div>
+    )}
+
+    {/* Modal to display business hours */}
+    {selectedDoctor && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-96">
+          <h3 className="text-2xl font-bold mb-4 text-center">{selectedDoctor.username}'s Business Hours</h3>
+          <ul className="space-y-2">
+            {selectedDoctor.businessHours.map((hour) => (
+              <li key={hour._id} className="flex justify-between">
+                <span className="font-medium">{daysOfWeek[hour.day]}</span>
+                {hour.isWorking ? (
+                  <span>
+                    {hour.startTime} - {hour.endTime}
                   </span>
-                ))}
-              </div>
-            </div>
-            
-            <button className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white py-3 px-6 rounded-lg font-medium transition-all">
-              View Profile <IoIosArrowForward />
-            </button>
-          </div>
-        </motion.div>
-      ))}
-    </div>
+                ) : (
+                  <span className="text-red-500">Closed</span>
+                )}
+              </li>
+            ))}
+          </ul>
+          <button
+            onClick={() => setSelectedDoctor(null)}
+            className="mt-6 w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )}
   </div>
 )}
 

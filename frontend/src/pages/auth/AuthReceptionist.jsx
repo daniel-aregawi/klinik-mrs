@@ -65,7 +65,7 @@ const AuthReceptionist = ({ role = 'Receptionist' }) => {
                 }, 2000);
             } else if (isLogin) {
                 const res = await axios.post(
-                    '/api/staff/login-receptionist', 
+                    'http://localhost:3001/api/staff/login-receptionist', 
                     {
                         email: formData.email.trim().toLowerCase(),
                         password: formData.password,

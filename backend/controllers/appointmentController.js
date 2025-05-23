@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Patient = require("../models/patientModel");
 const User = require("../models/userModel");
 const Appointment = require("../models/appointmentModel");
+const nodemailer = require('nodemailer');
 
 // Helper function to format time to HH:mm
 const formatTime = (date) => {
@@ -14,6 +15,31 @@ const combineDateAndTime = (date, time) => {
   const combined = new Date(date);
   combined.setHours(parseInt(hours), parseInt(minutes), 0, 0);
   return combined;
+};
+
+// Helper function to send email notification
+const sendEmailNotification = async (email, subject, message) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: process.env.EMAIL_SERVICE || 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject,
+      text: message,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`Email sent to ${email}`);
+  } catch (error) {
+    console.error('Error sending email:', error);
+  }
 };
 
 exports.bookAppointment = async (req, res) => {
@@ -70,6 +96,14 @@ exports.bookAppointment = async (req, res) => {
       });
     }
 
+    // Send email notification to the patient
+    const patient = await Patient.findById(patientId);
+    if (patient && patient.email) {
+      const subject = "Appointment Confirmation";
+      const message = `Your appointment with Dr. ${doctor.name} is confirmed for ${date} at ${time}.`;
+      await sendEmailNotification(patient.email, subject, message);
+    }
+
     // Check doctor's business hours for the appointment day
     const dayOfWeek = appointmentDate.getDay();
     const businessHours = doctor.businessHours.find(h => h.day === dayOfWeek);
@@ -99,7 +133,6 @@ exports.bookAppointment = async (req, res) => {
     }
 
     // Rest of the existing appointment booking logic
-    const patient = await Patient.findById(patientId);
     if (!patient) {
       return res.status(404).json({ 
         success: false,

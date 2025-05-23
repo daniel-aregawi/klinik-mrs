@@ -98,10 +98,21 @@ const ReceptionistDashboard = () => {
   const fetchAppointments = async () => {
     try {
       console.log('Fetching appointments from API...');
-      const response = await axiosInstance.get('/receptionist/appointments');
-      
+
+      // Add query parameters for date, limit, and sort
+      const today = new Date();
+      const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+
+      const response = await axiosInstance.get('/receptionist/appointments', {
+        params: {
+          date: startOfDay.toISOString(),
+          limit: 100,
+          sort: '-date',
+        },
+      });
+
       console.log('Appointments API response:', response.data);
-      
+
       if (response.data.success) {
         setAppointments(response.data.data);
         console.log(`Set ${response.data.data.length} appointments in state`);

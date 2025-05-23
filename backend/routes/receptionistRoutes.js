@@ -152,8 +152,11 @@ router.get('/appointments', verifyReceptionist, async (req, res) => {
   }
 });
 
+// Route to get today's appointments
+router.get('/receptionist/appointments', verifyReceptionist, receptionistController.getTodaysAppointments);
+
 // Get all approved doctors
-router.get('/doctors', verifyReceptionist, async (req, res) => {
+router.get('/doctors', async (req, res) => {
   try {
     console.log('Fetching doctors for receptionist...');
     

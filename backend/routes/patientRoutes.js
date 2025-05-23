@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Patient = require("../models/patientModel");
-const { generateOtpHandler, verifyOtpHandler, testSmsHandler } = require("../controllers/patientController");
+const { generateOtpHandler, verifyOtpHandler, loginPatient } = require("../controllers/patientController");
 const sendSMS = require("../utils/sendSms");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -15,7 +15,7 @@ const fs = require('fs');
 const patientController = require('../controllers/patientController');
 
 // OTP Authentication
-router.post('/send-otp', async (req, res) => {
+router.post('/send-email-verification', async (req, res) => { // Updated route to send email verification
   try {
     const { phone, contactNumber } = req.body;
     const phoneNumber = phone || contactNumber;
@@ -100,11 +100,6 @@ router.post('/send-otp', async (req, res) => {
     });
   }
 });
-
-router.post('/verify-otp', verifyOtpHandler);
-
-// Test SMS route
-router.post('/test-sms', testSmsHandler);
 
 // Check if patient exists
 router.post("/check", async (req, res) => {
@@ -199,6 +194,9 @@ router.post("/register", async (req, res) => {
     });
   }
 });
+
+// Patient login route
+router.post('/login', loginPatient);
 
 // Protected routes
 // router.use(authMiddleware);
@@ -402,6 +400,39 @@ router.get('/:customId', async (req, res) => {
   } catch (error) {
     console.error('Error getting patient:', error);
     res.status(500).json({ success: false, message: 'Error getting patient' });
+  }
+});
+
+// Test email route
+router.get('/test-email', async (req, res) => {
+  try {
+    const email = "danielaregawi50@gmail.com"; // Replace with your test email
+    const subject = "Test Email from Hospital Management System";
+    const message = "This is a test email to verify the SMTP configuration.";
+
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      auth: {
+        user: process.env.SMTP_USERNAME,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: email,
+      subject,
+      text: message,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`Test email sent to ${email}`);
+    res.status(200).json({ message: "Test email sent successfully." });
+  } catch (error) {
+    console.error("Error sending test email:", error);
+    res.status(500).json({ message: "Failed to send test email.", error: error.message });
   }
 });
 

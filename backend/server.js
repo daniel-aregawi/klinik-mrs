@@ -57,11 +57,10 @@ mongoose.connect(mongoURI, {
 async function testEmailConfig() {
     console.log('Testing email configuration...');
     const emailConfig = {
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
+        service: 'gmail',
         auth: {
             user: process.env.SMTP_USERNAME,
-            pass: process.env.SMTP_PASSWORD,
+            pass: process.env.SMTP_APP_PASSWORD, // Use Gmail App Password
         },
     };
 
